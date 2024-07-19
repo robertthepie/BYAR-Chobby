@@ -151,7 +151,7 @@ local function ProcessBoolOption(data, index)
 
 	local checkBox = Checkbox:New {
 		x = 5,
-		y = index * 32,
+		y = index*32,
 		width = 345,
 		height = 30,
 		boxalign = "right",
@@ -293,27 +293,16 @@ local function ProcessStringOption(data, index)
 end
 
 local function ProcessSubHeaderFakeOption(data, index)
-	local label = Label:New {
+	return Label:New {
 		x = 5,
-		y = 0,
-		width = 1200,
+		y = index*32,
+		width = 1600,
 		height = 30,
 		valign = "center",
 		align = "left",
 		caption = data.name,
 		objectOverrideFont = WG.Chobby.Configuration:GetFont(2),
 		tooltip = data.desc,
-	}
-	return Control:New {
-		x = 0,
-		y = index*32,
-		width = 1600,
-		height = 32,
-		padding = {0, 0, 0, 0},
-    tooltip = data.desc,
-		children = {
-			label
-		}
 	}
 end
 
@@ -331,18 +320,25 @@ local function PopulateTab(options)
 		horizontalScrollbar = false,
 	}
 
+	local collumn, row = 1, 0
 	for i = 1, #options do
 		local data = options[i]
-		if data.type == "list" then
-			contentsPanel:AddChild(ProcessListOption(data, #contentsPanel.children))
-		elseif data.type == "bool" then
-			contentsPanel:AddChild(ProcessBoolOption(data, #contentsPanel.children))
-		elseif data.type == "number" then
-			contentsPanel:AddChild(ProcessNumberOption(data, #contentsPanel.children))
-		elseif data.type == "string" then
-			contentsPanel:AddChild(ProcessStringOption(data, #contentsPanel.children))
-		elseif data.type == "subheader" then
-			contentsPanel:AddChild(ProcessSubHeaderFakeOption(data, #contentsPanel.children))
+		if data then
+			if (data.collumn or 1) > collumn then
+				row = row - 1
+			end
+			local rowData =	data.type == "list"		and ProcessListOption(data, row)
+					or	data.type == "bool"		and ProcessBoolOption(data, row)
+					or	data.type == "number"	and ProcessNumberOption(data, row)
+					or	data.type == "string"	and ProcessStringOption(data, row)
+					or	data.type == "subheader"and ProcessSubHeaderFakeOption(data, row)
+					or	nil
+			if rowData then
+				collumn = data.collumn or 1
+				rowData.x = rowData.x + (collumn - 1) * 625
+				row = row + 1
+				contentsPanel:AddChild(rowData)
+			end
 		end
 	end
 	return {contentsPanel}
