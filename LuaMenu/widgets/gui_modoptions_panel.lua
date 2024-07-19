@@ -70,9 +70,9 @@ end
 
 local function ProcessListOption(data, index)
 	local label = Label:New {
-		x = 320,
+		x = 5,
 		y = 0,
-		width = 1200,
+		width = 320,
 		height = 30,
 		valign = "center",
 		align = "left",
@@ -103,7 +103,7 @@ local function ProcessListOption(data, index)
 	end
 
 	local list = ComboBox:New {
-		x = 5,
+		x = 325,
 		y = 1,
 		width = 300,
 		height = 30,
@@ -127,7 +127,7 @@ local function ProcessListOption(data, index)
 	return Control:New {
 		x = 0,
 		y = index*32,
-		width = 1600,
+		width = 625,
 		height = 32,
 		padding = {0, 0, 0, 0},
 		children = {
@@ -138,20 +138,6 @@ local function ProcessListOption(data, index)
 end
 
 local function ProcessBoolOption(data, index)
-	local label = Label:New {
-		x = 320,
-		y = 0,
-		width = 1200,
-		height = 30,
-		valign = "center",
-		align = "left",
-		caption = data.name,
-		objectOverrideFont = WG.Chobby.Configuration:GetFont(2),
-		tooltip = data.desc,
-	}
-
-	local oldText = localModoptions[data.key] or modoptionDefaults[data.key]
-
 	local checked = false
 	if localModoptions[data.key] == nil then
 		if modoptionDefaults[data.key] == "1" then
@@ -163,16 +149,15 @@ local function ProcessBoolOption(data, index)
 
 	local checkBox = Checkbox:New {
 		x = 5,
-		y = 0,
-		width = 300,
+		y = index * 32,
+		width = 345,
 		height = 30,
 		boxalign = "right",
 		boxsize = 25,
-		caption = "",--data.name,
+		caption = data.name,
 		checked = checked,
 		objectOverrideFont = WG.Chobby.Configuration:GetFont(2),
 		tooltip = data.desc,
-
 		OnChange = {
 			function (obj, newState)
 				localModoptions[data.key] = tostring((newState and 1) or 0)
@@ -181,28 +166,15 @@ local function ProcessBoolOption(data, index)
 	}
 	modoptionControlNames[data.key] = checkBox
 
-	return Control:New {
-		x = 0,
-		y = index*32,
-		width = 1600,
-		height = 32,
-		padding = {0, 0, 0, 0},
-    tooltip = data.desc,
-		children = {
-			label,
-			checkBox
-		}
-	}
-
-	--return checkBox
+	return checkBox
 end
 
 local function ProcessNumberOption(data, index)
 
 	local label = Label:New {
-		x = 320,
+		x = 5,
 		y = 0,
-		width = 1200,
+		width = 320,
 		height = 30,
 		valign = "center",
 		align = "left",
@@ -214,7 +186,7 @@ local function ProcessNumberOption(data, index)
 	local oldText = localModoptions[data.key] or modoptionDefaults[data.key]
 
 	local numberBox = EditBox:New {
-		x = 5,
+		x = 325,
 		y = 1,
 		width = 300,
 		height = 30,
@@ -253,7 +225,7 @@ local function ProcessNumberOption(data, index)
 	return Control:New {
 		x = 0,
 		y = index*32,
-		width = 1600,
+		width = 625,
 		height = 32,
 		padding = {0, 0, 0, 0},
 		tooltip = data.desc,
@@ -267,9 +239,9 @@ end
 local function ProcessStringOption(data, index)
 
 	local label = Label:New {
-		x = 320,
+		x = 5,
 		y = 0,
-		width = 1200,
+		width = 320,
 		height = 30,
 		valign = "center",
 		align = "left",
@@ -281,7 +253,7 @@ local function ProcessStringOption(data, index)
 	local oldText = localModoptions[data.key] or modoptionDefaults[data.key]
 
 	local textBox = EditBox:New {
-		x = 5,
+		x = 325,
 		y = 1,
 		width = 300,
 		height = 30,
@@ -305,7 +277,7 @@ local function ProcessStringOption(data, index)
 	return Control:New {
 		x = 0,
 		y = index*32,
-		width = 1600,
+		width = 625,
 		height = 32,
 		padding = {0, 0, 0, 0},
 		children = {
