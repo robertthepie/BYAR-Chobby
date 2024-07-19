@@ -130,6 +130,8 @@ local function ProcessListOption(data, index)
 		width = 625,
 		height = 32,
 		padding = {0, 0, 0, 0},
+		tooltip = data.desc,
+		greedyHitTest = data.desc ~= nil,
 		children = {
 			label,
 			list
@@ -229,6 +231,7 @@ local function ProcessNumberOption(data, index)
 		height = 32,
 		padding = {0, 0, 0, 0},
 		tooltip = data.desc,
+		greedyHitTest = data.desc ~= nil,
 		children = {
 			label,
 			numberBox
@@ -280,6 +283,8 @@ local function ProcessStringOption(data, index)
 		width = 625,
 		height = 32,
 		padding = {0, 0, 0, 0},
+		tooltip = data.desc,
+		greedyHitTest = data.desc ~= nil,
 		children = {
 			label,
 			textBox
