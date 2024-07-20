@@ -292,7 +292,7 @@ local function ProcessStringOption(data, index)
 	}
 end
 
-local function ProcessSubHeaderFakeOption(data, index)
+local function ProcessSubHeader(data, index)
 	return Label:New {
 		x = 5,
 		y = index*32,
@@ -303,6 +303,14 @@ local function ProcessSubHeaderFakeOption(data, index)
 		caption = data.name,
 		objectOverrideFont = WG.Chobby.Configuration:GetFont(2),
 		tooltip = data.desc,
+	}
+end
+
+local function ProcessLineSeperator(data, index)
+	return Line:New {
+		x = 0,
+		y = index*32 + 3,
+		width = 1600,
 	}
 end
 
@@ -320,22 +328,26 @@ local function PopulateTab(options)
 		horizontalScrollbar = false,
 	}
 
-	local collumn, row = 1, 0
+	local column, row = 1, 0
 	for i = 1, #options do
 		local data = options[i]
 		if data then
-			if (data.collumn or 1) > collumn then
+			if (data.column or -1) > column then
 				row = row - 1
 			end
 			local rowData =	data.type == "list"		and ProcessListOption(data, row)
-					or	data.type == "bool"		and ProcessBoolOption(data, row)
-					or	data.type == "number"	and ProcessNumberOption(data, row)
-					or	data.type == "string"	and ProcessStringOption(data, row)
-					or	data.type == "subheader"and ProcessSubHeaderFakeOption(data, row)
-					or	nil
+						or	data.type == "bool"		and ProcessBoolOption(data, row)
+						or	data.type == "number"	and ProcessNumberOption(data, row)
+						or	data.type == "string"	and ProcessStringOption(data, row)
+						or	data.type == "subheader"and ProcessSubHeader(data, row)
+						or	nil
+			if data.type == "seperator" then
+				rowData = ProcessLineSeperator(data, row)
+				row = row - 0.5
+			end
 			if rowData then
-				collumn = data.collumn or 1
-				rowData.x = rowData.x + (collumn - 1) * 625
+				column = data.column or 1
+				rowData.x = rowData.x + (column - 1) * 625
 				row = row + 1
 				contentsPanel:AddChild(rowData)
 			end
