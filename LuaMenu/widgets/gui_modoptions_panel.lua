@@ -346,7 +346,7 @@ local function PopulateTab(options)
 				row = row - 0.5
 			end
 			if rowData then
-				column = data.column or 1
+				column = math.abs(data.column or 1)
 				rowData.x = rowData.x + (column - 1) * 625
 				row = row + 1
 				contentsPanel:AddChild(rowData)
