@@ -158,7 +158,7 @@ local function ProcessBoolOption(data, index)
 		boxsize = 25,
 		caption = data.name,
 		checked = checked,
-		objectOverrideFont = WG.Chobby.Configuration:GetFont(2),
+		objectOverrideFont = WG.Chobby.Configuration:GetFont(tonumber(data.font) or 2),
 		tooltip = data.desc,
 		OnChange = {
 			function (obj, newState)
@@ -181,7 +181,7 @@ local function ProcessNumberOption(data, index)
 		valign = "center",
 		align = "left",
 		caption = data.name,
-		objectOverrideFont = WG.Chobby.Configuration:GetFont(2),
+		objectOverrideFont = WG.Chobby.Configuration:GetFont(tonumber(data.font) or 2),
 		tooltip = data.desc,
 	}
 
@@ -249,7 +249,7 @@ local function ProcessStringOption(data, index)
 		valign = "center",
 		align = "left",
 		caption = data.name,
-		objectOverrideFont = WG.Chobby.Configuration:GetFont(2),
+		objectOverrideFont = WG.Chobby.Configuration:GetFont(tonumber(data.font) or 2),
 		tooltip = data.desc,
 	}
 
@@ -301,7 +301,7 @@ local function ProcessSubHeader(data, index)
 		valign = "center",
 		align = "left",
 		caption = data.name,
-		objectOverrideFont = WG.Chobby.Configuration:GetFont(2),
+		objectOverrideFont = WG.Chobby.Configuration:GetFont(tonumber(data.font) or 2),
 		tooltip = data.desc,
 	}
 end
