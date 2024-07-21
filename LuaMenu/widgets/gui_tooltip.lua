@@ -983,8 +983,12 @@ local function getReplayPlayerListTooltip(teamList)
 	end
 
 	local cols = #teamList
+	local rows = 1
 	local divisor
-	if not showTeams then		
+	if showTeams then
+		rows = math.ceil(#teamList / 4)
+		cols = math.min(#teamList, 4)
+	else
 		if #teamList < 33 then
 			divisor = 8 -- max 4 columns
 		else
@@ -1003,10 +1007,11 @@ local function getReplayPlayerListTooltip(teamList)
 		}
 
 	local xOffsetTeam = 0
+	local yOffsetTeam = 0
 	local function newTeamStack()
 		return Control:New {
 			x = xOffsetTeam,
-			y = 0,			
+			y = yOffsetTeam,
 			autosize = true,
 			padding = {0, 0, 0, 0},
 			parent = replayTooltip.mainStackPanel,
@@ -1024,8 +1029,9 @@ local function getReplayPlayerListTooltip(teamList)
 		table.sort(players, SortPlayersBySkill)
 
 		if showTeams or teamNr == 1 then
+			xOffsetTeam = (teamNr - 1) % 4 * PLAYERWIDTH
+			yOffsetTeam = math.ceil(teamNr / 4) * (23 + 4 * PLAYERHEIGHT)
 			teamStack = newTeamStack()
-			xOffsetTeam = xOffsetTeam + PLAYERWIDTH
 			
 			-- team title
 			if not teamStack.teamTitle then
@@ -1042,8 +1048,8 @@ local function getReplayPlayerListTooltip(teamList)
 			
 			yOffsetPlayer = 23
 		else
-			xOffsetPlayer = (math.ceil(teamNr / divisor) -1 )  * PLAYERWIDTH
-			yOffsetPlayer = 23 + math.ceil((teamNr-1) % divisor) * PLAYERHEIGHT
+			xOffsetPlayer = math.floor(teamNr / divisor)  * PLAYERWIDTH
+			yOffsetPlayer = 23 + (teamNr-1) % divisor * PLAYERHEIGHT
 		end
 		yOffsetMax = math.max(yOffsetMax, yOffsetPlayer)
 
