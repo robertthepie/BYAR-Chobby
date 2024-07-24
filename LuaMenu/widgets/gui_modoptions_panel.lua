@@ -164,7 +164,7 @@ local function ProcessListOption(data, index)
 	local defaultItem = 1
 	local defaultKey = localModoptions[data.key] or data.def
 
-	local lock, unlock = {}, {}
+	local lock, unlock, locking = {}, {}, false
 	local items = {}
 	local itemNameToKey = {}
 	local itemKeyToName = {}
@@ -183,12 +183,11 @@ local function ProcessListOption(data, index)
 		end
 
 		if itemData.lock or itemData.unlock then
-			lock[itemData.key] = {itemData.lock}
-			unlock[itemData.key] = {itemData.unlock}
+			lock[itemData.key] = itemData.lock
+			unlock[itemData.key] = itemData.unlock
+			locking = true
 		end
 	end
-	if #lock <= 0 then lock = nil end
-	if #unlock <= 0 then unlock = nil end
 
 	local list = ComboBox:New {
 		x = 325,
@@ -203,11 +202,11 @@ local function ProcessListOption(data, index)
 		selectByName = true,
 		selected = defaultItem,
 		OnSelectName = {
-			(lock or unlock) and function (obj, selectedName)
-				processChildrenLocks(unlock and unlock[itemNameToKey[selectedName]] or nil, lock and lock[itemNameToKey[selectedName]] or nil, data.bitmask, data.name)
+			locking and function (obj, selectedName)
+				processChildrenLocks(unlock and unlock[itemNameToKey[selectedName]] or nil, lock and lock[itemNameToKey[selectedName]] or nil, data.bitmask or 1, data.name)
 				localModoptions[data.key] = itemNameToKey[selectedName]
 			end or
-			function (obj, selectedName)
+			function (obj, selectedName)	
 				localModoptions[data.key] = itemNameToKey[selectedName]
 			end
 		},
