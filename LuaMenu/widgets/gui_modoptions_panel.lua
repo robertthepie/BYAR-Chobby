@@ -64,6 +64,86 @@ local function TextFromNum(num, step)
 	return text
 end
 
+local function getModOptionByKey(key)
+	local retOption = {}
+	for _, option in ipairs(modoptions) do
+		if option.key and option.key == key then
+			retOption = option
+			break
+		end
+	end
+	return retOption
+end
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Lock Handling
+local lockedOptions = {}
+local postLock = {}
+local function processChildrenLocks(unlock, lock, bitmask, locker)
+	local item, itemLock, child, itemData, tooltip
+	if unlock then for i = 1, #unlock do
+		item = unlock[i]
+		itemLock = lockedOptions[item]
+		if itemLock then
+			itemLock = math.bit_and(math.bit_inv(bitmask), itemLock)
+			if itemLock > 0 then
+				lockedOptions[item] = itemLock
+			else
+				lockedOptions[item] = nil
+				child = modoptionControlNames[item]
+				itemData = getModOptionByKey(item)
+				if child.parent.name ~= "tabPanel" then
+					for j = 1, #child.parent.children do
+						child.parent.children[j].font = WG.Chobby.Configuration:GetFont(2)
+						child.parent.children[j].tooltip = itemData.desc
+					end
+					child.parent.tooltip = itemData.desc
+				else
+					child.font = WG.Chobby.Configuration:GetFont(2)
+					child.tooltip = itemData.desc
+				end
+			end
+		end
+	end end
+
+	if lock then for i = 1, #lock do
+		item = lock[i]
+		itemLock = lockedOptions[item] or 0
+		Spring.Echo("EPIE LOCK", item, itemLock, bitmask, locker)
+		if itemLock == 0 then
+			child = modoptionControlNames[item]
+			if child.parent.name ~= "tabPanel" then
+				for j = 1, #child.parent.children do
+					child.parent.children[j].font = WG.Chobby.Configuration:GetFont(11)
+					child.parent.children[j].tooltip = "Locked by "..locker
+				end
+				child.parent.tooltip = "Locked by "..locker
+			else
+				child.font = WG.Chobby.Configuration:GetFont(11)
+				child.tooltip = "Locked by "..locker
+			end
+		else
+			child = modoptionControlNames[item]
+			if child.parent.name ~= "tabPanel" then
+				tooltip = child.parent.children[1].tooltip
+				tooltip = string.find(tooltip, locker) and tooltip or tooltip..", "..locker
+				for j = 1, #child.parent.children do
+					child.parent.children[j].font = WG.Chobby.Configuration:GetFont(11)
+					child.parent.children[j].tooltip = tooltip
+				end
+				child.parent.tooltip = tooltip
+			else
+				child.font = WG.Chobby.Configuration:GetFont(11)
+				tooltip = child.tooltip
+				child.tooltip = string.find(tooltip, locker) and tooltip or tooltip..", "..locker
+			end
+		end
+		itemLock = math.bit_or(itemLock, bitmask)
+		lockedOptions[item] = itemLock
+	end end
+end
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Option Control Handling
@@ -84,6 +164,7 @@ local function ProcessListOption(data, index)
 	local defaultItem = 1
 	local defaultKey = localModoptions[data.key] or data.def
 
+	local lock, unlock = {}, {}
 	local items = {}
 	local itemNameToKey = {}
 	local itemKeyToName = {}
@@ -100,7 +181,14 @@ local function ProcessListOption(data, index)
 		if itemData.desc then
 			itemsTooltips[i] = itemData.desc
 		end
+
+		if itemData.lock or itemData.unlock then
+			lock[itemData.key] = {itemData.lock}
+			unlock[itemData.key] = {itemData.unlock}
+		end
 	end
+	if #lock <= 0 then lock = nil end
+	if #unlock <= 0 then unlock = nil end
 
 	local list = ComboBox:New {
 		x = 325,
@@ -115,6 +203,10 @@ local function ProcessListOption(data, index)
 		selectByName = true,
 		selected = defaultItem,
 		OnSelectName = {
+			(lock or unlock) and function (obj, selectedName)
+				processChildrenLocks(unlock and unlock[itemNameToKey[selectedName]] or nil, lock and lock[itemNameToKey[selectedName]] or nil, data.bitmask, data.name)
+				localModoptions[data.key] = itemNameToKey[selectedName]
+			end or
 			function (obj, selectedName)
 				localModoptions[data.key] = itemNameToKey[selectedName]
 			end
@@ -161,6 +253,14 @@ local function ProcessBoolOption(data, index)
 		objectOverrideFont = WG.Chobby.Configuration:GetFont(tonumber(data.font) or 2),
 		tooltip = data.desc,
 		OnChange = {
+			(data.unlock or data.lock) and function (obj, newState)
+				if newState then -- on enable
+					processChildrenLocks(data.unlock, data.lock, data.bitmask or 1, data.name)
+				else -- on disable
+					processChildrenLocks(data.lock, data.unlock, data.bitmask or 1, data.name)
+				end
+				localModoptions[data.key] = tostring((newState and 1) or 0)
+			end or
 			function (obj, newState)
 				localModoptions[data.key] = tostring((newState and 1) or 0)
 			end
@@ -321,6 +421,7 @@ local function PopulateTab(options)
 	-- string = editBox
 
 	local contentsPanel = ScrollPanel:New {
+		name = "tabPanel",
 		x = 6,
 		right = 5,
 		y = 10,
@@ -335,15 +436,35 @@ local function PopulateTab(options)
 			if (data.column or -1) > column then
 				row = row - 1
 			end
-			local rowData =	data.type == "list"		and ProcessListOption(data, row)
-						or	data.type == "bool"		and ProcessBoolOption(data, row)
-						or	data.type == "number"	and ProcessNumberOption(data, row)
-						or	data.type == "string"	and ProcessStringOption(data, row)
-						or	data.type == "subheader"and ProcessSubHeader(data, row)
-						or	nil
-			if data.type == "seperator" then
+
+			local rowData = nil
+			if data.type == "number" then
+				rowData = ProcessNumberOption(data, row)
+
+			elseif data.type == "string" then
+				rowData = ProcessStringOption(data, row)
+
+			elseif data.type == "subheader" then
+				rowData = ProcessSubHeader(data, row)
+
+			elseif data.type == "bool" then
+				rowData = ProcessBoolOption(data, row)
+				if data.unlock then
+					postLock[#postLock+1] = {data.unlock, data.bitmask or 1, data.name}
+				end
+
+			elseif data.type == "list" then
+				rowData = ProcessListOption(data, row)
+				if data.def and data.lock then
+					postLock[#postLock+1] = {data.lock, data.bitmask or 1, data.name}
+				elseif data.unlock then
+					postLock[#postLock+1] = {data.unlock, data.bitmask or 1, data.name}
+				end
+
+			elseif data.type == "seperator" then
 				rowData = ProcessLineSeperator(data, row)
 				row = row - 0.5
+
 			end
 			if rowData then
 				column = math.abs(data.column or 1)
@@ -378,6 +499,7 @@ local function CreateModoptionWindow()
 	modoptionControlNames = {}
 
 	local tabs = {}
+	lockedOptions = {}
 
 	local tabWidth = 120
 
@@ -399,6 +521,11 @@ local function CreateModoptionWindow()
 			children = PopulateTab(data.options),
 			weight = data.weight or weight
 		}
+	end
+
+	for i = 1, #postLock do
+		processChildrenLocks(nil, postLock[i][1], postLock[i][2], postLock[i][3])
+		postLock[i] = nil
 	end
 
 	table.sort(tabs, function(a,b) return a.weight > b.weight end)
@@ -523,17 +650,6 @@ local function CreateModoptionWindow()
 			newh
 		)
 	end
-end
-
-local function getModOptionByKey(key)
-	local retOption = {}
-	for _, option in ipairs(modoptions) do
-		if option.key and option.key == key then
-			retOption = option
-			break
-		end
-	end
-	return retOption
 end
 
 local function InitializeModoptionsDisplay()
