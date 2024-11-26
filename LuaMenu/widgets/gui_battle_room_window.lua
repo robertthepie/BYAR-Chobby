@@ -1046,13 +1046,39 @@ local function SetupInfoButtonsPanel(leftInfo, rightInfo, battle, battleID, myUs
 		WG.DownloadHandler.AddListener("DownloadFinished", gameArchiveReady)
 	end
 
+	local lobGameName = WG.Chobby.Configuration.gameConfig.ShortenNameString(battle.gameName)
+	local btnReloadMO
+	if lobGameName == "BAR $VERSION" then
+	btnReloadMO = Button:New {
+			name = 'btnReloadMO',
+			x = 5,
+			y = leftOffset-2,
+			height = 35,
+			right = 5,
+			classname = "option_button",
+			caption = "Reload Options \b",
+			objectOverrideFont = config:GetFont(11),
+			tooltip = "Reload the modoptions.lua file, to see any changes made.\nButton only visible in Dev %VERSION singleplayer",
+			OnClick = {
+				function()
+					if modoptionsLoaded then
+						WG.ModoptionsPanel.LoadModoptions(battle.gameName, battleLobby)
+						WG.ModoptionsPanel.ShowModoptions()
+					end
+				end
+			},
+			parent = leftInfo,
+		}
+		leftOffset = leftOffset + 38
+	end
+
 
 	local lblGame = Label:New {
 		name = 'lblGame',
 		x = 8,
 		y = leftOffset,
 		right = 3,
-		caption = WG.Chobby.Configuration.gameConfig.ShortenNameString(battle.gameName),
+		caption = lobGameName,--WG.Chobby.Configuration.gameConfig.ShortenNameString(battle.gameName),
 		objectOverrideFont = config:GetFont(2),
 		parent = leftInfo,
 		OnResize = {
@@ -1167,6 +1193,7 @@ local function SetupInfoButtonsPanel(leftInfo, rightInfo, battle, battleID, myUs
 		offset = offset + 40
 		btnOptionPresets:SetPos(nil, offset)
 		offset = offset + 40
+		if btnReloadMO then btnReloadMO:SetPos(nil, offset-2) offset = offset + 38 end
 		lblGame:SetPos(nil, offset)
 		offset = offset + 26
 		imHaveGame:SetPos(nil, offset)

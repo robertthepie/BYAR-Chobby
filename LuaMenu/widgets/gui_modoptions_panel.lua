@@ -21,7 +21,6 @@ local battleLobby
 local localModoptions = {}
 local modoptionControlNames = {}
 local modoptions
-local modoptionsByGame = {}
 
 -- constants
 local MARKED_AS_CHANGED_COLOR = {0.99, 0.75, .3, 1} -- {0.07, 0.66, 0.92, 1.0}
@@ -1025,10 +1024,7 @@ function ModoptionsPanel.LoadModoptions(gameName, newBattleLobby)
 		return VFS.Include("modoptions.lua", nil, VFS.ZIP)
 	end
 
-	if modoptionsByGame[gameName] then
-		modoptions = modoptionsByGame[gameName]
-	else
-
+	do
 		local alreadyLoaded = false
 		for _, archive in pairs(VFS.GetLoadedArchives()) do
 			if archive == gameName then
@@ -1036,14 +1032,11 @@ function ModoptionsPanel.LoadModoptions(gameName, newBattleLobby)
 				break
 			end
 		end
-
 		if alreadyLoaded then
-			Spring.Log(LOG_SECTION, LOG.ERROR, "Game archive already loaded, cannot fetch modoptions")
+			modoptions = VFS.Include("modoptions.lua", nil, VFS.ZIP)
 		else
 			modoptions = VFS.UseArchive(gameName, LoadModOptions)
-			modoptionsByGame[gameName] = modoptions
 		end
-
 	end
 
 
