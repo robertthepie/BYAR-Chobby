@@ -498,6 +498,9 @@ local function ProcessStringOption(data, index)
 					label.font = WG.Chobby.Configuration:GetFont(2)
 
 				else
+					if obj.text:sub(1, 4) == "--64" then
+						obj.text = Spring.Utilities.Base64Encode(obj.text:sub(5, -1))
+					end
 					localModoptions[data.key] = obj.text
 					if obj.text == modoptionDefaults[data.key] then
 						textBox.font = WG.Chobby.Configuration:GetFont(2)
