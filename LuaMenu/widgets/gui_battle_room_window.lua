@@ -59,6 +59,10 @@ local vote_whoCalledPattern = "%* (.*) called a vote for command"
 local vote_mapPattern = 'set map (.*)"'
 
 local playerHandler
+
+-- modoptions extra
+local factionComboBoxes = {}
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Download management
@@ -1495,7 +1499,7 @@ local function SetupInfoButtonsPanel(leftInfo, rightInfo, battle, battleID, myUs
 	return externalFunctions
 end
 
-local function AddTeamButtons(parent, offX, joinFunc, aiFunc, unjoinable, disallowBots)
+local function AddTeamButtons(parent, offX, joinFunc, aiFunc, unjoinable, disallowBots, allyTeam)
 	if not disallowBots then
 		local addAiButton = Button:New {
 			name = "addAiButton",
@@ -1527,6 +1531,158 @@ local function AddTeamButtons(parent, offX, joinFunc, aiFunc, unjoinable, disall
 			tooltip = "Change your team to this one",
 		}
 	end
+
+	-- the faction limiter is limited to only 8 teams, this is due to the 24 bit limit:
+	-- 3*8 = 24
+	if allyTeam <= 8 then
+		local firstTime = true
+		local myAllyTeam = allyTeam
+
+
+		-- isolate our 3 bits
+		local ourBitmask = 7
+		for i = 1, myAllyTeam do
+			ourBitmask = ourBitmask * 8
+		end
+		local currentBitmask, currentOurBitmask = 0, 0
+		do
+			local modoptions = battleLobby:GetMyBattleModoptions()
+			if modoptions then
+				currentBitmask = tonumber(modoptions.factionlimiter) or 0
+			end
+		end
+
+		local teamFactionsSigns = {"ALL","✔  ","✔  ","✔  ","RESET"}
+		local teamFactionsNames = {"ALL", "Armada", "Cortex", "Legion", "RESET"}
+		local teamFactionsTooltips = {
+			nil,
+			"Toggle Armada Playability for this team",
+			"Toggle Cortex Playability for this team",
+			"Toggle Legion Playability for this team",
+			"Re-Enable All Factions for All Teams",
+		}
+		local teamFactionsImages = {
+			nil,
+			LUA_DIRNAME .. "configs/gameConfig/byar/sidepics/" .. "armada.png",
+			LUA_DIRNAME .. "configs/gameConfig/byar/sidepics/" .. "cortex.png",
+			LUA_DIRNAME .. "configs/gameConfig/byar/sidepics/" .. "legion.png",
+			nil,
+		}
+		local setCaption
+		local teamFactionsSet
+		teamFactionsSet = ComboBox:New{
+			name = "teamFactionsSet",
+			x = offX+95,
+			y = 0, --5
+			height = 24,
+			width = 72,
+			objectOverrideFont = WG.Chobby.Configuration:GetFont(2),
+			parent = parent,
+			showSelection = true, -- we have custom behaviour
+			tooltip = "Limit Which Factions this team may start as.",
+			items = teamFactionsSigns,
+			itemsTooltips = teamFactionsTooltips,
+			itemImages = teamFactionsImages,
+			itemKeyToName = teamFactionsNames,
+			selected = 5,
+			OnDispose = {function()
+					-- a new box might end up overwriting this one before this gets disposed
+					if factionComboBoxes[allyTeam] == teamFactionsSet then
+						factionComboBoxes[allyTeam] = nil
+					end
+				end},
+			OnSelect = {
+				function (obj, selected, item)
+					if firstTime then
+						firstTime = false
+						return
+					end
+					local newbitmask = 0
+					if selected == 5 then
+						battleLobby:SetModOptions({
+							factionlimiter="0"
+						})
+						setCaption()
+						return
+					elseif selected == 1 then
+						newbitmask = 0
+						newbitmask = math.bit_and(currentBitmask, math.bit_inv(ourBitmask))
+					else
+						local bit = selected == 4 and 4 or selected - 1
+						if currentOurBitmask == bit then
+							newbitmask = math.bit_xor(7, bit)
+						else
+							newbitmask = math.bit_xor(currentOurBitmask, bit)
+						end
+
+						if newbitmask == 7 then
+							newbitmask = 0
+						end
+						newbitmask = math.bit_or(
+							math.bit_and(currentBitmask, math.bit_inv(ourBitmask)),
+							newbitmask*(2^(myAllyTeam*3))
+						)
+					end
+					battleLobby:SetModOptions({
+						factionlimiter=tostring(newbitmask)
+					})
+					setCaption()
+				end
+			},
+			updateBitmaskReading = function(bitmask)
+				if bitmask == currentBitmask then
+					return
+				end
+
+				local newbitmask = math.bit_and(bitmask or 0, ourBitmask)
+				newbitmask = math.floor(newbitmask/2^(myAllyTeam*3))
+
+				if newbitmask == 0 then
+					teamFactionsSigns[2] = "✔  "
+					teamFactionsSigns[3] = "✔  "
+					teamFactionsSigns[4] = "✔  "
+				else
+					teamFactionsSigns[2] = math.bit_and(newbitmask, 1) == 1 and "✔  " or "🔒  "
+					teamFactionsSigns[3] = math.bit_and(newbitmask, 2) == 2 and "✔  " or "🔒  "
+					teamFactionsSigns[4] = math.bit_and(newbitmask, 4) == 4 and "✔  " or "🔒  "
+				end
+				currentBitmask = bitmask
+				currentOurBitmask = newbitmask
+				setCaption()
+			end,
+		}
+		factionComboBoxes[allyTeam] = teamFactionsSet
+		setCaption = function()
+			teamFactionsSet.selected = 5
+			local caption = ""
+			if currentOurBitmask == 0 then
+				caption = "ALL"
+			else
+				if math.bit_and(currentOurBitmask, 1) == 1 then
+					caption = caption.."A"
+				end
+				if math.bit_and(currentOurBitmask, 2) == 2 then
+					caption = caption.."C"
+				end
+				if math.bit_and(currentOurBitmask, 4) == 4 then
+					caption = caption.."L"
+				end
+			end
+			teamFactionsSet.caption = caption
+		end
+		setCaption()
+
+
+		if battleLobby.name == "singleplayer" then
+			teamFactionsSet:Hide()
+		else
+			local a = battleLobby:GetBattle(battleLobby:GetMyBattleID())
+			if not a.bossed then
+				teamFactionsSet:Hide()
+			end
+		end
+	end
+
 end
 
 local function SortPlayersBySkill(a, b)
@@ -1747,7 +1903,8 @@ local function SetupPlayerPanel(playerParent, spectatorParent, battle, battleID)
 						WG.PopupPreloader.ShowAiListWindow(battleLobby, battle.gameName, teamIndex, quickAddAi)
 					end,
 					disallowCustomTeams and teamIndex ~= 0,
-					(disallowBots or disallowCustomTeams) and teamIndex ~= 1
+					(disallowBots or disallowCustomTeams) and teamIndex ~= 1,
+					teamIndex
 				)
 			end
 			local teamStack = Control:New {
@@ -1832,7 +1989,8 @@ local function SetupPlayerPanel(playerParent, spectatorParent, battle, battleID)
 							WG.PopupPreloader.ShowAiListWindow(battleLobby, battle.gameName, teamIndex)
 						end,
 						disallowCustomTeams and teamIndex ~= 0,
-						(disallowBots or disallowCustomTeams) and teamIndex ~= 1
+						(disallowBots or disallowCustomTeams) and teamIndex ~= 1,
+						teamIndex
 					)
 
 					if disallowCustomTeams then
@@ -3240,6 +3398,18 @@ local function InitializeControls(battleID, oldLobby, topPoportion, setupData)
 			end
 		end
 
+		if battleLobby.name ~= "singleplayer" then
+			if battle.bossed then
+				for team, locker in pairs(factionComboBoxes) do
+					locker:Show()
+				end
+			else
+				for team, locker in pairs(factionComboBoxes) do
+					locker:Hide()
+				end
+			end
+		end
+
 		if username ~= battleLobby.myUserName or battleLobby.name == "singleplayer" or (status.isSpectator == nil and status.isReady == nil and status.queuePos == nil) then
 			-- Spring.Echo("Canceled")
 			return
@@ -3327,6 +3497,7 @@ local function InitializeControls(battleID, oldLobby, topPoportion, setupData)
 		if not battle.isRunning then
 			readyButton.tooltip = tooltipCandidate
 		end
+
 	end
 
 	local function OnUpdateUserTeamStatus(listener, userName, allyNumber, isSpectator, queuePos)
@@ -3741,6 +3912,18 @@ local function InitializeControls(battleID, oldLobby, topPoportion, setupData)
 		end
 	end
 
+	local function OnSetModOptions(listener, modoptions)
+		if not modoptions then
+			return
+		end
+		local factionlimiter = modoptions.factionlimiter
+		if factionlimiter then
+			for _, locker in pairs(factionComboBoxes) do
+				locker.updateBitmaskReading(tonumber(factionlimiter))
+			end
+		end
+	end
+
 	battleLobby:AddListener("OnUpdateUserTeamStatus", OnUpdateUserTeamStatus)
 	battleLobby:AddListener("OnUpdateUserBattleStatus", OnUpdateUserBattleStatus)
 	battleLobby:AddListener("OnBattleIngameUpdate", OnBattleIngameUpdate)
@@ -3763,6 +3946,7 @@ local function InitializeControls(battleID, oldLobby, topPoportion, setupData)
 	battleLobby:AddListener("OnDisableUnits", OnDisableUnits)
 	battleLobby:AddListener("OnRequestBattleStatus", OnRequestBattleStatus)
 	battleLobby:AddListener("OnUpdateBattleTitle", OnUpdateBattleTitle)
+	battleLobby:AddListener("OnSetModOptions", OnSetModOptions)
 
 	local function OnDisposeFunction()
 		emptyTeamIndex = 0
@@ -3788,6 +3972,7 @@ local function InitializeControls(battleID, oldLobby, topPoportion, setupData)
 		oldLobby:RemoveListener("OnEnableAllUnits", OnEnableAllUnits)
 		oldLobby:RemoveListener("OnDisableUnits", OnDisableUnits)
 		oldLobby:RemoveListener("OnRequestBattleStatus", OnRequestBattleStatus)
+		oldLobby:RemoveListener("OnSetModOptions", OnSetModOptions)
 
 		WG.BattleStatusPanel.RemoveBattleTab()
 	end
