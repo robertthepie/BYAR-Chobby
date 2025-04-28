@@ -1569,13 +1569,26 @@ local function AddTeamButtons(parent, offX, joinFunc, aiFunc, unjoinable, disall
 			nil,
 		}
 		local setCaption
-		local teamFactionsSet
+		local teamFactionsSet, factionFlagHolder, factionArm, factionCor, factionLeg
+		local factionWraper = {
+			Hide=function()
+				teamFactionsSet:Hide()
+				setCaption()
+			end,
+			Show=function()
+				teamFactionsSet:Show()
+				setCaption()
+			end,
+			updateBitmaskReading=function(bitmask)
+				teamFactionsSet.updateBitmaskReading(bitmask)
+			end,
+		}
 		teamFactionsSet = ComboBox:New{
 			name = "teamFactionsSet",
 			x = offX+95,
 			y = 0, --5
 			height = 24,
-			width = 72,
+			width = 72+15,
 			objectOverrideFont = WG.Chobby.Configuration:GetFont(2),
 			parent = parent,
 			showSelection = true, -- we have custom behaviour
@@ -1587,7 +1600,7 @@ local function AddTeamButtons(parent, offX, joinFunc, aiFunc, unjoinable, disall
 			selected = 5,
 			OnDispose = {function()
 					-- a new box might end up overwriting this one before this gets disposed
-					if factionComboBoxes[allyTeam] == teamFactionsSet then
+					if factionComboBoxes[allyTeam] == factionWraper then
 						factionComboBoxes[allyTeam] = nil
 					end
 				end},
@@ -1651,34 +1664,76 @@ local function AddTeamButtons(parent, offX, joinFunc, aiFunc, unjoinable, disall
 				setCaption()
 			end,
 		}
-		factionComboBoxes[allyTeam] = teamFactionsSet
+		factionComboBoxes[allyTeam] = factionWraper
 		setCaption = function()
 			teamFactionsSet.selected = 5
-			local caption = ""
-			if currentOurBitmask == 0 then
-				caption = "ALL"
+			if currentBitmask == 0 then
+				factionArm:Hide()
+				factionCor:Hide()
+				factionLeg:Hide()
+			elseif currentOurBitmask == 0 then
+				factionArm:Show()
+				factionCor:Show()
+				factionLeg:Show()
 			else
 				if math.bit_and(currentOurBitmask, 1) == 1 then
-					caption = caption.."A"
+					factionArm:Show()
+				else
+					factionArm:Hide()
 				end
 				if math.bit_and(currentOurBitmask, 2) == 2 then
-					caption = caption.."C"
+					factionCor:Show()
+				else
+					factionCor:Hide()
 				end
 				if math.bit_and(currentOurBitmask, 4) == 4 then
-					caption = caption.."L"
+					factionLeg:Show()
+				else
+					factionLeg:Hide()
 				end
 			end
-			teamFactionsSet.caption = caption
+			teamFactionsSet.caption = ""
 		end
+		factionArm = Image:New {
+			name = "factionArm",
+			x = offX+95+5,
+			y = 0,
+			height = 24,
+			width = 24,
+			parent = parent,
+			keepAspect = true,
+			file = LUA_DIRNAME .. "configs/gameConfig/byar/sidepics/" .. "armada.png",
+		}
+		factionCor = Image:New {
+			name = "factionCor",
+			x = offX+95+5+24,
+			y = 0,
+			height = 24,
+			width = 24,
+			parent = parent,
+			keepAspect = true,
+			file = LUA_DIRNAME .. "configs/gameConfig/byar/sidepics/" .. "cortex.png",
+		}
+		factionLeg = Image:New {
+			name = "factionLeg",
+			x = offX+95+5+48,
+			y = 0,
+			height = 24,
+			width = 24,
+			parent = parent,
+			keepAspect = true,
+			file = LUA_DIRNAME .. "configs/gameConfig/byar/sidepics/" .. "legion.png",
+		}
 		setCaption()
 
-
 		if battleLobby.name == "singleplayer" then
-			teamFactionsSet:Hide()
+			if not WG.Chobby.Configuration.ShowhiddenModopions then
+				factionWraper:Hide()
+			end
 		else
 			local a = battleLobby:GetBattle(battleLobby:GetMyBattleID())
 			if not a.bossed then
-				teamFactionsSet:Hide()
+				factionWraper:Hide()
 			end
 		end
 	end
