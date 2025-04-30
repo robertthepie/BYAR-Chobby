@@ -23,6 +23,11 @@ local welcomePanelItems = {
         UrlText = "Sign Up & Info",
     },   
     {
+        Header = "Pink fluffy Unicorns dancing on rainbows",
+        Text = "some text",
+        Spoiler = "hewwo there, this is a much larger pile of text to interast you in some text and text accessories",
+    },
+    {
         Header = "Alpha Cup V Finals are on YouTube!",
         Text =" \n" .. "Congratulations to our new 1v1 Champion - Autopilot! In case you missed it, you can still rewatch the Alpha Cup madness on YouTube." .. " \n" .. " \n" .. "Thank you to everyone in the community for making this event happen! At 87 players, this was the biggest Alpha Cup yet.",
         Image = "LuaMenu/images/AlphaCupV.png",

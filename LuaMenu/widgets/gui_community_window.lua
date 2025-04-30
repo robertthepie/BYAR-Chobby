@@ -443,6 +443,56 @@ local function GetNewsEntry(parentHolder, index, headingSize, timeAsTooltip, top
 			controls.text:SetVisibility(false)
 		end
 
+		if entryData.spoiler then
+			if not controls.spoiler then
+				controls.spoiler = Button:New{
+					x = textPos,
+					y = offset + headFormat.vSpacing,
+					right = 4,
+					height = 120,
+					align = "left",
+					valign = "top",
+					caption = "Show Spoiler",
+					objectOverrideFont = WG.Chobby.Configuration:GetButtonFont(2),
+					objectOverrideHintFont = WG.Chobby.Configuration:GetFont(2),
+					parent = holder,
+					spoiler = entryData.spoiler,
+					spoilerWrapped = entryData.spoiler,
+					covered = true,
+					hasDisabledFont = true,
+					suppressButtonReaction = true,
+					OnMouseDown = { function(self, x, y, button, mods)
+							if self.covered then
+								self:SetCaption("Are you sure?")
+							end
+						end
+					},
+					OnMouseUp = { function(self, x, y, button, mods)
+						if x >= 0 and y >= 0 and x <= self.width and y <= self.height and self.covered then
+							self:SetCaption(self.spoilerWrapped)
+							self.covered = false
+						else
+							self:SetCaption("Show Spoiler")
+							self.covered = true
+						end
+					end
+					},
+				}
+			else
+				controls.spoiler:SetCaption("Show Spoiler")
+				controls.spoiler.spoiler = entryData.spoiler
+				controls.spoiler.spoilerWrapped = entryData.spoiler
+				controls.spoiler.covered = true
+				controls.spoiler:SetVisibility(true)
+				controls.spoiler:SetPos(textPos, offset + headFormat.vSpacing)
+				controls.spoiler._relativeBounds.right = 4
+				controls.spoiler:UpdateClientArea(false)
+			end
+			offset = offset + headFormat.vSpacing + controls.spoiler.height
+		elseif controls.spoiler then
+			controls.spoiler:SetVisibility(false)
+		end
+
 		return parentPosition + offset
 	end
 
@@ -476,6 +526,14 @@ local function GetNewsEntry(parentHolder, index, headingSize, timeAsTooltip, top
 		if controls.text and controls.text.visible then
 			controls.text:SetPos(nil, offset + headFormat.vSpacing)
 			offset = offset + headFormat.vSpacing + controls.text.height
+		end
+
+		if controls.spoiler and controls.spoiler.visible then
+			controls.spoiler:SetPos(nil, offset + headFormat.vSpacing)
+			local spoilerHeight
+			controls.spoiler.spoilerWrapped, spoilerHeight = WG.Chobby.Configuration:GetFont(2):WrapText(controls.spoiler.spoiler, controls.spoiler.width)
+			controls.spoiler.height = spoilerHeight
+			offset = offset + headFormat.vSpacing + controls.spoiler.height
 		end
 
 		if controls.linkButton and controls.linkButton.visible then
@@ -560,6 +618,7 @@ local function GetNewsHandler(parentControl, headingSize, timeAsTooltip, topHead
 				atTime = items[i].Time,
 				text = items[i].Text,
 				urlText = items[i].UrlText,
+				spoiler = items[i].Spoiler,
 			}
 			if items[i].Image then
 				local imagePos = string.find(items[i].Image, "news")
