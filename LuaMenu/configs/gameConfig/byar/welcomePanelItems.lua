@@ -24,8 +24,7 @@ local welcomePanelItems = {
     },   
     {
         Header = "Pink fluffy Unicorns dancing on rainbows",
-        Text = "some text",
-        Spoiler = "hewwo there, this is a much larger pile of text to interast you in some text and text accessories",
+        Text = "Hear Ye, Hear Ye,\nThis is yet another attempt at || adding inline spoilers || to the || text || of a || welcome panel item ||.\nLet it hereby be known that || some things are unknwon ||",
     },
     {
         Header = "Alpha Cup V Finals are on YouTube!",

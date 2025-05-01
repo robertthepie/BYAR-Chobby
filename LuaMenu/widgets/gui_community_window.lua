@@ -439,58 +439,82 @@ local function GetNewsEntry(parentHolder, index, headingSize, timeAsTooltip, top
 				controls.text:UpdateClientArea(false)
 			end
 			offset = offset + headFormat.vSpacing + controls.text.height
-		elseif controls.text then
-			controls.text:SetVisibility(false)
-		end
 
-		if entryData.spoiler then
-			if not controls.spoiler then
-				controls.spoiler = Button:New{
-					x = textPos,
-					y = offset + headFormat.vSpacing,
-					right = 4,
-					height = 120,
-					align = "left",
-					valign = "top",
-					caption = "Show Spoiler",
-					objectOverrideFont = WG.Chobby.Configuration:GetButtonFont(2),
-					objectOverrideHintFont = WG.Chobby.Configuration:GetFont(2),
-					parent = holder,
-					spoiler = entryData.spoiler,
-					spoilerWrapped = entryData.spoiler,
-					covered = true,
-					hasDisabledFont = true,
-					suppressButtonReaction = true,
-					OnMouseDown = { function(self, x, y, button, mods)
-							if self.covered then
-								self:SetCaption("Are you sure?")
+			if string.find(entryData.text, "||") then
+				local censor = Control:New{
+					x = 0,
+					y = 0,
+					right = 0,
+					height = 200,
+					width = 200,
+					padding = {0, 0, 0, 0},
+					parent = controls.text,
+				}
+				local wrappedText = controls.text.objectOverrideFont:WrapText(entryData.text, controls.text.width)
+				local covering = false
+				local blocks
+				local i, j = 1, nil
+				for n, line in pairs(string.split(wrappedText, "\n")) do
+					blocks = {}
+					i, j = 1, nil
+					while true do
+
+						-- if we are still spoilering from earlier
+						if covering then
+							i = string.find(line, "||", i + 1)
+
+							-- if we need to cover the whole line
+							if not i then
+								blocks[#blocks+1] = {n, 1, string.len(line)}
+								break
 							end
-						end
-					},
-					OnMouseUp = { function(self, x, y, button, mods)
-						if x >= 0 and y >= 0 and x <= self.width and y <= self.height and self.covered then
-							self:SetCaption(self.spoilerWrapped)
-							self.covered = false
+							covering = false
+							blocks[#blocks+1] = {n, 1, i}
+
+						-- line starts uncovered
 						else
-							self:SetCaption("Show Spoiler")
-							self.covered = true
+							i = string.find(line, "||", i + 1)
+							if not i then break end
+							j = string.find(line, "||", i + 1)
+
+							-- we mark that we overflow to the next
+							if not j then
+								blocks[#blocks+1] = {n, i, string.len(line)}
+								covering = true
+								break
+							end
+							blocks[#blocks+1] = {n, i, j}
+							i = j
 						end
 					end
-					},
-				}
-			else
-				controls.spoiler:SetCaption("Show Spoiler")
-				controls.spoiler.spoiler = entryData.spoiler
-				controls.spoiler.spoilerWrapped = entryData.spoiler
-				controls.spoiler.covered = true
-				controls.spoiler:SetVisibility(true)
-				controls.spoiler:SetPos(textPos, offset + headFormat.vSpacing)
-				controls.spoiler._relativeBounds.right = 4
-				controls.spoiler:UpdateClientArea(false)
+					for i = 1, #blocks do
+						Spring.Echo(
+							"Added",
+							blocks[i][3],
+							blocks[i][2],
+							blocks[i][1]
+						)
+						Spring.Echo(
+							string.sub(line, blocks[i][2], blocks[i][3])
+						)
+						local blockout = Window:New{
+							x = 0,--blocks[i][2],
+							y = blocks[i][1]*16,
+							resizable = false,
+							draggable = false,
+							right = 0,
+							height = 100,
+							width = 100,
+							maxWidth = 100,
+							Height = 100,
+							padding = {0,0,0,0},
+							parent = censor,
+						}
+					end
+				end
 			end
-			offset = offset + headFormat.vSpacing + controls.spoiler.height
-		elseif controls.spoiler then
-			controls.spoiler:SetVisibility(false)
+		elseif controls.text then
+			controls.text:SetVisibility(false)
 		end
 
 		return parentPosition + offset
@@ -528,13 +552,6 @@ local function GetNewsEntry(parentHolder, index, headingSize, timeAsTooltip, top
 			offset = offset + headFormat.vSpacing + controls.text.height
 		end
 
-		if controls.spoiler and controls.spoiler.visible then
-			controls.spoiler:SetPos(nil, offset + headFormat.vSpacing)
-			local spoilerHeight
-			controls.spoiler.spoilerWrapped, spoilerHeight = WG.Chobby.Configuration:GetFont(2):WrapText(controls.spoiler.spoiler, controls.spoiler.width)
-			controls.spoiler.height = spoilerHeight
-			offset = offset + headFormat.vSpacing + controls.spoiler.height
-		end
 
 		if controls.linkButton and controls.linkButton.visible then
 			offset = math.max(offset, offsetImage) + headFormat.vSpacing

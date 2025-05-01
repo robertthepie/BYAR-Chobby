@@ -180,7 +180,7 @@ function Font:WrapText(text, width, height, size)
 	if (not size) then
 		size = self.size
 	end
-	if (height < 1.5 * self._font.lineheight) or (width < size) then
+	if (height and (height < 1.5 * self._font.lineheight)) or (width < size) then
 		return text --//workaround for a bug in <= 80.5.2
 	end
 	return (self._font):WrapText(text, width, height, size)
