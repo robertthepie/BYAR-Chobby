@@ -499,7 +499,7 @@ local function ProcessStringOption(data, index)
 
 				else
 					if obj.text:sub(1, 2) == "--" then
-						obj.text = Spring.Utilities.Base64Encode(obj.text:sub(5, -1))
+						obj.text = Spring.Utilities.Base64Encode(obj.text)
 					end
 					localModoptions[data.key] = obj.text
 					if obj.text == modoptionDefaults[data.key] then
