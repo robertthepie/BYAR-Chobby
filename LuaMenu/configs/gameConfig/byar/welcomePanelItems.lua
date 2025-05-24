@@ -14,51 +14,55 @@ local welcomePanelItems = {
         Header = "Welcome to Beyond All Reason",
         Text = "Welcome back Commander. We hope you are ready for epic Singleplayer and Multiplayer battles. Check out our Discord and join the community!\n",
     },
+
     {
-        Header = "Get Ready for Faction Wars 1.0!",
-        Time = "2025-05-17T14:00:00",
-        Text = "May is the Month of Legion, and Faction Wars is just around the corner. Commanders, it's time to start cooking!" .. " \n" .. " \n" .. "Sign up before May 10th to secure your spot in the biggest 3v3 Tournament of the Summer - Legion is enabled, and we have lots of fun things planned. Stay tuned!",
+        Header = "The Lightbringer Update is Here!",
+        Text = "Commanders, after two weeks of a testing run for the Lightbringer Update, we are thrilled to announce the merge went without any major issues. This update represents the largest visual overhaul we have ever attempted. Enjoy BAR battles being more lit than ever!" .. " \n" .. " \n" .. "We have prepared a detailed post about the update and a Cinematic Highlights Video, check it out!",
+	    Image = "LuaMenu/images/welcomepanel/lightbringerbox.png",
+        Url = "https://www.beyondallreason.info/news/lightbringer-update",
+        UrlText = "Read the Full Changes",
+    },
+
+    {
+        Header = "Faction Wars: Main Stage!",
+        Time = "2025-05-24T15:00:00",
+        Text = "Catch the qualifying 8 teams go head to head this weekend as they fight over four spots in the Semi Finals!"  .. " \n" .. " \n" ..  "Casted by Lostdeadman, Hells Hound, Angry Strawberry, vdb and more!",
         Image = "LuaMenu/images/FactionWars3v3.png",
-        Url = "https://bfn.challonge.com/FWQualifier",
-        UrlText = "Sign Up & Info",
-    },   
-    {
-        Header = "Alpha Cup V 2025",
-        Text =" \n" .. "Congratulations to our new 1v1 Champion - Autopilot! In case you missed it, you can still rewatch the Alpha Cup madness on YouTube." .. " \n" .. " \n" .. "Thank you to everyone in the community for making this event happen! At 87 players, this was the biggest Alpha Cup yet.",
-        Image = "LuaMenu/images/AlphaCupV.png",
-        Url = "https://youtu.be/EZCU_lza-ro?si=hm0dPqSu0drIosk-&t=1203s",
-        UrlText = "Watch the Qualifier",
+        Url = "https://www.youtube.com/watch?v=2juI32sre1o",
+        UrlText = "Watch The Qualifier",
     },
-{
-        Header = "Upcoming Events:",
-    },
+
     {
-        Header = "Master's League",
-        Text = "Compete in the Master's League for the final 1v1 tournament of April!" .. " \n" .. " \n" .. "Join the Fight Night Discord for info and sign up. Min 25 OS or organizer approval required.",
-        Image = "LuaMenu/images/twitchmisc/FightNight.png",
-        Time = "2025-04-26T17:00:00",
-        Url = "https://discord.gg/YgSUjQpTZe",
-        UrlText = "Join the Discord",
+        Header = "Nation Wars #4 – Registration Open",
+        Text = "The 4th edition of our friendly competition to find out which nation is the best at BAR is coming in hot this June!\nWill the United States defend their title, or will YOU claim it and bolster your flag's pride?".." \n".." \n".."Join the Nation Wars Discord, rally your fellows, and form a team of 4 to 6 players to represent your nation!\nIf more than 2 teams register for the same nation, they will play national qualifiers to determine the best 2 to enter the main event.".." \n".." \n".."You have until June 6 to sign up, before battling it out in 4v4 against the other nations on the weekends of June 14/15 and June 21/22.\nFull rules / format / map pool / schedule available on the Nation Wars Discord.",
+        Image = "LuaMenu/images/nation_wars.png",
+        Url = "https://discord.gg/qurXWcjmNN",
+        UrlText = "Nation Wars Discord",
+    },
+
+    {
+        Header = "New Map: Pools of Ilys",
+        Text = "Crucial geothermal vents were discovered on the surface of Ilys. Make landfall and secure."  .. " \n" .. " \n" ..  "Vast ponds breakup an icy landscape rich with geothermal power."  .. " \n" .. " \n" ..  "Designed for 1v1 - 3v3, supports up to 5v5. Made by neb_",
+        Image = "LuaMenu/images/maps/poolsofilys.png",
     },
     {
-        Header = "King of The Hill",
-        Text = "Join the AllReasonNoLogic crew for some free-for-all chaos in their weekly King of The Hill cast!",
-        Time = "2025-04-27T11:00:00",
-        Image = "LuaMenu/images/twitchmisc/KOTH.png",
-        Url = "https://twitch.tv/BeyondAllReasonOfficial",
-        UrlText = "Watch on Twitch",
+        Header = "New Map: Sand Crowns",
+        Text = "Corner spawns fight over sand crowns surrounding secluded sharp peaks."  .. " \n" .. " \n" ..  "The pale landscape is dotted with vibrant blue crystals."  .. " \n" .. " \n" ..  "Supports up to 4v4v4v4. Made by Phalange.",
+        Image = "LuaMenu/images/maps/sandcrowns.png",
     },
     {
-        Header = "New Map: Project SD-129",
-        Text = "Project SD-129 is a massive up to 32-player FFA and Team FFA map by Nikuksis, set on a donut-shaped asteroid with a space backdrop." .. " \n" .. " \n" .. "Designed for chaotic free-for-alls but also balanced for team play, Asteroid Isles in the middle feature some resources that are only reachable by air. Try it now!",
-        Image = "LuaMenu/configs/gameConfig/byar/minimapOverride/Project_SD-129_v1.0.jpg",
+        Header = "New Map: Prismatic Anomaly",
+        Text = "Anomalous light signatures were detected on a moon orbiting an Astral Compound." .. " \n" .. " \n" .. "Preliminary scans have revealed structures of unknown orgin. Further investigation is necessary."  .. " \n" .. " \n" ..  "Designed for 3v3, supports 1v1 to 5v5. Made by Zagupi.",
+        Image = "LuaMenu/images/maps/prismaticanomaly.png",
     },
+
     {
         Header = "Now Available: BAR Guides",
         Text = "New to Beyond All Reason? Check out these new Guides on Discord written by Zeteo!" .. " \n" .. " \n",
         Url = "https://discord.com/channels/549281623154229250/1303141562120929320/1303141562120929320",
         UrlText = "Read the new Guides",
     },
+
     {
         Header = "BAR is accepting donations again! ",
         Text = "Dear Commanders, we are delighted to announce the reopening of our donation platform after a longer-than-expected hiatus." .. " \n" .. " \n" .. "As we've been hard at work refining BAR to ensure maximum enjoyment for our ever-expanding community, we repeatedly placed donation efforts on hold to focus on other priorities." .. " \n" .. " \n" .. "Support BAR with our newly reopened donation platform!" .. " \n",
@@ -83,18 +87,9 @@ local welcomePanelItems = {
     --[[
     {
         Header = "New engine release",
-        Url = nil, -- should be nil if you dont want a clickable link button
-        Time = nil, --"",
         Text = "We've just released a new engine update. Be sure to report any issues to #bugreports on the discord and thank you for bearing with us through any teething problems with it.."
     },
     --]]
-
-    --{
-    --    Header = "Code of Conduct",
-    --    Url = "https://www.beyondallreason.info/code-of-conduct",
-    --    Text = "We recently updated our code of conduct; be sure to check it out. As our community growth we've added the ability to report problems, click a user and select 'report user' to alert the moderator team to an issue. See the full code of conduct at https://www.beyondallreason.info/code-of-conduct",
-    --    UrlText = "Code of Conduct Link"
-    --},
 
     {
         Header = "Play with your friends: use our servers!",
