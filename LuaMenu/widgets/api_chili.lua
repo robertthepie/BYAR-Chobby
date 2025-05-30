@@ -71,16 +71,10 @@ end
 local lastTimer = Spring.GetTimer()
 local startTimer = Spring.GetTimer()
 local hideInterface = true
-local loadFade = false
+local loadFade = 1
 
 local totalHideInterface = false
 local loadTex = "MenuLoadscreens/loadscreen.png"
-
-Spring.Echo(
-	"TEST INFO:",
-	hideInterface,
-	Spring.GetTimer()
-)
 
 function widget:DrawScreen()
 	if startTimer then
