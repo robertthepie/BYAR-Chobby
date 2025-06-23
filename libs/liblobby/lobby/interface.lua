@@ -470,14 +470,25 @@ end
 -- end
 
 function Interface:SayBattle(message)
-	if (message:find("!") or message:find("$")) and message:find("\n") then
-		for _, multiCommandPart in ipairs(ParseMultiCommandMessage(message)) do
-			self:super("SayBattle", multiCommandPart):_SendCommand(concat("SAYBATTLE", multiCommandPart))
+	if (message:find("!") or message:find("$")) then
+
+		local myBattle = self:GetBattle(self.myBattleID)
+		if myBattle.bossed and myBattle.preset and myBattle.preset == "custom" then
+			local myBattleStatus = self.userBattleStatus[self.myUserName]
+			if not myBattleStatus.isBoss then
+				return self
+			end
 		end
-	else
-		self:super("SayBattle", message):_SendCommand(concat("SAYBATTLE", message))
+
+		if message:find("\n") then
+			for _, multiCommandPart in ipairs(ParseMultiCommandMessage(message)) do
+				self:super("SayBattle", multiCommandPart):_SendCommand(concat("SAYBATTLE", multiCommandPart))
+			end
+		else
+			self:super("SayBattle", message):_SendCommand(concat("SAYBATTLE", message))
+		end
 	end
-	
+
 	-- Prevent crash for tweakdef referencing "legcomlvl" (NuttyB)
 	if message:find("tweakdef") and message:find("bGVnY29tbHZsM") then
 		self:SetModOptions({experimentallegionfaction = 1}):SayBattleEx("enabled legion faction since it is referenced in the tweakdef")
