@@ -906,6 +906,11 @@ end
 						hidenOptions[option.unlock[i]] = true
 					end
 				end
+				if option.priority then
+					text = text .. option.priority[panelModoptions[option.key]] .. "\n"
+					hidenOptions[option.key] = true
+					empty = false
+				end
 			elseif option.type == "list" then
 				for j = 1, #option.items do
 					if option.items[j].key == panelModoptions[option.key] and option.items[j].lock then
@@ -930,6 +935,10 @@ end
 					hidenOptions[option.key] = true
 				end
 			end
+		end
+
+		if text ~= "" then
+			text = text .. "\255\255\128\128" .. "------" .. "\n"
 		end
 
 		for key, value in pairs(panelModoptions) do
